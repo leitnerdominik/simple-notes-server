@@ -1,9 +1,25 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
 
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
+
+  const errors = validationResult(req);
+  console.log(errors.array());
+
+  if(!errors.isEmpty()) {
+    console.log('ERROR');
+    
+    const error = new Error(errors.array()[0].msg);
+    error.statusCode = 422;
+    error.data = errors.array();
+    next(error);
+    return;
+  }
+  
+
   const email = req.body.email;
   const name = req.body.name;
   const password = req.body.password;
@@ -44,7 +60,7 @@ exports.login = async (req, res, next) => {
       throw error;
     }
 
-    const isPasswordCorrect = await bcrypt(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
       const error = new Error('Wrong Password!');
@@ -60,5 +76,8 @@ exports.login = async (req, res, next) => {
       'supersecretpassword',
       { expiresIn: '1h' }
     );
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
 };
