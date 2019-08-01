@@ -5,20 +5,19 @@ const { validationResult } = require('express-validator');
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
-
+  console.log('BODY: ', req.body);
   const errors = validationResult(req);
   console.log(errors.array());
 
-  if(!errors.isEmpty()) {
+  if (!errors.isEmpty()) {
     console.log('ERROR');
-    
+
     const error = new Error(errors.array()[0].msg);
     error.statusCode = 422;
     error.data = errors.array();
     next(error);
     return;
   }
-  
 
   const email = req.body.email;
   const name = req.body.name;
@@ -51,6 +50,7 @@ exports.signup = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  console.log(email, password);
 
   try {
     const user = await User.findOne({ email: email });
@@ -76,6 +76,13 @@ exports.login = async (req, res, next) => {
       'supersecretpassword',
       { expiresIn: '1h' }
     );
+    res
+      .status(200)
+      .json({
+        message: 'Logged in successfully!',
+        token: token,
+        userId: user._id.toString(),
+      });
   } catch (err) {
     console.log(err);
     next(err);
