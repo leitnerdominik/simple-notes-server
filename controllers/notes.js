@@ -17,7 +17,7 @@ exports.createNote = async (req, res, next) => {
     user.notes.push(newNote);
     await user.save();
 
-    res.status(201).json({ message: 'Note created!' });
+    res.status(201).json({ message: 'Note created!', note: newNote });
   } catch (err) {
     console.log(err);
     next(err);

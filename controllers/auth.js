@@ -56,6 +56,7 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email: email });
     if (!user) {
       const error = new Error('User not found!');
+      error.message = 'Wrong credentials!';
       error.statusCode = 401;
       throw error;
     }
@@ -64,6 +65,7 @@ exports.login = async (req, res, next) => {
 
     if (!isPasswordCorrect) {
       const error = new Error('Wrong Password!');
+      error.message = 'Wrong credentials!';
       error.statusCode = 401;
       throw error;
     }
