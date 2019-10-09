@@ -50,3 +50,29 @@ exports.updateNote = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteNote = async (req, res, next) => {
+  const noteId = req.params.noteId;
+  try {
+    const note = await Note.findById(noteId);
+    if (!note) {
+      const error = new Error('Note not found!');
+      error.statusCode = 404;
+      throw error;
+    }
+    if (note.creator.toString() !== req.userId) {
+      const error = new Error('Not authorized!');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    await Note.findByIdAndRemove(noteId);
+    const user = await User.findById(req.userId);
+    user.notes.pull(noteId);
+    await user.save();
+    res.status(200).json({ message: 'Note deleted!' });
+  } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
