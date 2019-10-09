@@ -5,12 +5,9 @@ const { validationResult } = require('express-validator');
 const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
-  console.log('BODY: ', req.body);
   const errors = validationResult(req);
-  console.log(errors.array());
 
   if (!errors.isEmpty()) {
-    console.log('ERROR');
 
     const error = new Error(errors.array()[0].msg);
     error.statusCode = 422;
@@ -39,8 +36,16 @@ exports.signup = async (req, res, next) => {
     });
 
     const user = await createdUser.save();
+    const token = jwt.sign(
+      {
+        email: user.email,
+        userId: user._id.toString(),
+      },
+      'supersecretpassword',
+      { expiresIn: '1h' }
+    );
 
-    res.status(201).json({ message: 'User created!' });
+    res.status(201).json({ message: 'User created!', token, userId: user._id.toString() });
   } catch (err) {
     console.log(err);
     next(err);
